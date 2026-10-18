@@ -1,0 +1,32 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: network-health-monitor
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: network-health-monitor
+  template:
+    metadata:
+      labels:
+        app: network-health-monitor
+    spec:
+      containers:
+        - name: network-health-monitor
+          image: IMAGE_PLACEHOLDER
+          ports:
+            - containerPort: 5000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 30
