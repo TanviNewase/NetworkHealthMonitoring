@@ -1,10 +1,15 @@
-from flask import Flask, render_template
+
+from flask import Flask, render_template, jsonify
 
 from monitor import monitor_devices
 from snmp_simulator import get_snmp_data
 
-
 app = Flask(__name__)
+
+
+@app.route("/healthz")
+def health_check():
+    return jsonify({"status": "healthy"}), 200
 
 
 @app.route("/")
@@ -15,7 +20,6 @@ def dashboard():
 
     # Add simulated SNMP information
     for device in devices:
-
         snmp_data = get_snmp_data(device["name"])
 
         device["cpu_usage"] = snmp_data["cpu_usage"]
@@ -26,25 +30,21 @@ def dashboard():
     total = len(devices)
 
     up = sum(
-        1
-        for device in devices
+        1 for device in devices
         if device["status"] == "UP"
     )
 
     down = total - up
-
     alerts = []
 
     for device in devices:
 
         if device["status"] == "DOWN":
-
             alerts.append(
                 f"{device['name']} is unreachable"
             )
 
         elif device["packet_loss"] > 10:
-
             alerts.append(
                 f"{device['name']} has "
                 f"{device['packet_loss']}% packet loss"
@@ -54,28 +54,24 @@ def dashboard():
             device["latency"] is not None
             and device["latency"] > 100
         ):
-
             alerts.append(
                 f"{device['name']} has high latency: "
                 f"{device['latency']} ms"
             )
 
         if device["cpu_usage"] > 75:
-
             alerts.append(
                 f"{device['name']} has high CPU usage: "
                 f"{device['cpu_usage']}%"
             )
 
         if device["memory_usage"] > 80:
-
             alerts.append(
                 f"{device['name']} has high memory usage: "
                 f"{device['memory_usage']}%"
             )
 
         if device["interface_status"] == "DOWN":
-
             alerts.append(
                 f"{device['name']} interface is DOWN"
             )
@@ -88,7 +84,6 @@ def dashboard():
         down=down,
         alerts=alerts
     )
-
 
 
 if __name__ == "__main__":
